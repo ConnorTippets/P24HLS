@@ -1,7 +1,7 @@
-import struct, io, os
+import struct, io, os, typing
 
 class Reader:
-    def __init__(self, handle : io.BufferedReader):
+    def __init__(self, handle : typing.Union[io.BufferedReader, io.BytesIO]):
         self.handle = handle
     
     def position(self) -> int:
