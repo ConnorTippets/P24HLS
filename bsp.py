@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from reader import Reader
+from reader import Reader, Writer
 
 HEADER_LUMPS = 64
 
@@ -58,7 +58,7 @@ class BSPReader:
     def read_lumps(self, lump_headers) -> list[Lump]:
         lumps = []
         for i in range(HEADER_LUMPS):
-            lump_header = lump_headers[i]
+            lump_header : LumpHeader = lump_headers[i]
             
             self.reader.go_to(lump_header.offset)
             lump_data = self.reader.read_bytes(lump_header.length)
@@ -73,4 +73,36 @@ class BSPReader:
         
         return BSP(header.version, lumps, header.map_revision)
 
-#class BSPWriter
+class BSPWriter:
+    def __init__(self, writer : Writer):
+        self.writer = writer
+    
+    def write_header(self, bsp : BSP):
+        self.writer.write_bytes(b'VBSP')
+        self.writer.write_int(bsp.version)
+        
+        offset = 1036
+        for i in range(HEADER_LUMPS):
+            lump : Lump = bsp.lumps[i]
+            
+            self.writer.write_int(offset)
+            self.writer.write_int(len(lump.data))
+            self.writer.write_int(lump.version)
+            self.writer.write_int(0)
+            
+            offset += len(lump.data)
+            if offset % 4:
+                offset += (4 - (offset % 4))
+        
+        self.writer.write_int(bsp.map_revision)
+    
+    def write_lumps(self, lumps: list[Lump]):
+        for lump in lumps:
+            self.writer.write_bytes(lump.data)
+            
+            if self.writer.position() % 4:
+                self.writer.skip_bytes(4 - (self.writer.position() % 4))
+    
+    def write(self, bsp : BSP):
+        self.write_header(bsp)
+        self.write_lumps(bsp.lumps)
