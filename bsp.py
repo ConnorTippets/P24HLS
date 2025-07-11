@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
-from reader import Reader, Writer
+from reader import Reader
+from writer import Writer
 from constants import HEADER_LUMPS, IDENT
 
 @dataclass
