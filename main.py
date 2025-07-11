@@ -1,7 +1,7 @@
 import sys
 
-from bsp import BSPReader
-from reader import Reader
+from bsp import BSPReader, BSPWriter
+from reader import Reader, Writer
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -13,4 +13,6 @@ if __name__ == "__main__":
         reader = Reader(handle)
         bsp = BSPReader(reader).read()
     
-    print(bsp)
+    with open(fname[:-4] + "_d.bsp", "wb") as handle:
+        writer = Writer(handle)
+        BSPWriter(writer).write(bsp)
