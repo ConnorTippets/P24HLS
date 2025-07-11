@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 
 from reader import Reader, Writer
-
-HEADER_LUMPS = 64
+from constants import HEADER_LUMPS, IDENT
 
 @dataclass
 class LumpHeader:
@@ -37,7 +36,7 @@ class BSPReader:
     
     def read_header(self) -> BSPHeader:
         magic_num = self.reader.read_bytes(4)
-        if not magic_num == b"VBSP":
+        if not magic_num == IDENT:
             raise Exception("input BSP is invalid!")
         
         version = self.reader.read_int()
