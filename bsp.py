@@ -84,13 +84,20 @@ class BSPWriter:
         offset = 1036
         for i in range(HEADER_LUMPS):
             lump : Lump = bsp.lumps[i]
+            length = len(lump.data)
             
-            self.writer.write_int(offset)
-            self.writer.write_int(len(lump.data))
-            self.writer.write_int(lump.version)
-            self.writer.write_int(0)
+            if length == 0:
+                self.writer.write_int(0)
+                self.writer.write_int(0)
+                self.writer.write_int(0)
+                self.writer.write_int(0)
+            else:
+                self.writer.write_int(offset)
+                self.writer.write_int(length)
+                self.writer.write_int(lump.version)
+                self.writer.write_int(0)
             
-            offset += len(lump.data)
+            offset += length
             if offset % 4:
                 offset += (4 - (offset % 4))
         
