@@ -28,6 +28,7 @@ class BSP:
         return f"BSP\nVersion: {self.version}\nMap Revision: {self.map_revision}"
 
     version: int
+    header: BSPHeader
     lumps: list[Lump]
     map_revision: int
 
@@ -71,7 +72,7 @@ class BSPReader:
         header = self.read_header()
         lumps = self.read_lumps(header.lump_headers)
         
-        return BSP(header.version, lumps, header.map_revision)
+        return BSP(header.version, header, lumps, header.map_revision)
 
 class BSPWriter:
     def __init__(self, writer : Writer):
