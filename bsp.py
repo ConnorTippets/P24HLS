@@ -24,6 +24,10 @@ class Lump:
 
 @dataclass
 class BSP:
+    def set_lump(self, id : int, lump : Lump, header : LumpHeader):
+        self.lumps[id] = lump
+        self.header.lump_headers[id] = header
+    
     def __repr__(self):
         return f"BSP\nVersion: {self.version}\nMap Revision: {self.map_revision}"
 
