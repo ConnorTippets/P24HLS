@@ -14,5 +14,9 @@ class Writer:
         raw_data = struct.pack("<i", data)
         self.write_bytes(raw_data)
     
+    def write_ushort(self, data : int):
+        raw_data = struct.pack("<H", data)
+        self.write_bytes(raw_data)
+    
     def skip_bytes(self, amount : int):
         self.write_bytes(bytes(amount))
