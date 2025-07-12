@@ -1,7 +1,7 @@
-import struct, io
+import struct, io, typing
 
 class Writer:
-    def __init__(self, handle : io.BufferedWriter):
+    def __init__(self, handle : typing.Union[io.BufferedWriter, io.BytesIO]):
         self.handle = handle
     
     def position(self) -> int:
