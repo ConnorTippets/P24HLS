@@ -2,23 +2,10 @@ import sys, io
 from dataclasses import astuple
 
 from constants import GAMELUMPS_ID
-from bsp import BSP, Lump, LumpHeader, BSPReader, BSPWriter
+from bsp import calc_new_offset, BSP, Lump, LumpHeader, BSPReader, BSPWriter
 from gamelump import GameLumpConverter
 from reader import Reader
 from writer import Writer
-
-def calc_new_offset(bsp : BSP, id : int):
-    if len(bsp.lumps[id].data) == 0:
-        return 0
-    
-    offset = 1036
-    for i in range(id):
-        offset += len(bsp.lumps[i].data)
-
-        if offset % 4:
-            offset += (4 - offset % 4)
-    
-    return offset
 
 def main():
     if len(sys.argv) < 2:
