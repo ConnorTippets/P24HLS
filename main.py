@@ -1,7 +1,24 @@
-import sys
+import sys, io
+from dataclasses import astuple
 
-from bsp import BSPReader, BSPWriter
-from reader import Reader, Writer
+from constants import GAMELUMPS_ID
+from bsp import BSP, Lump, LumpHeader, BSPReader, BSPWriter
+from gamelump import GameLumpConverter
+from reader import Reader
+from writer import Writer
+
+def calc_new_offset(bsp : BSP, id : int):
+    if len(bsp.lumps[id].data) == 0:
+        return 0
+    
+    offset = 1036
+    for i in range(id):
+        offset += len(bsp.lumps[i].data)
+
+        if offset % 4:
+            offset += (4 - offset % 4)
+    
+    return offset
 
 def main():
     if len(sys.argv) < 2:
@@ -14,6 +31,24 @@ def main():
     with open(fname, "rb") as handle:
         reader = Reader(handle)
         bsp = BSPReader(reader).read()
+    
+    print(bsp)
+    
+    gamelump_t = bsp.lumps[GAMELUMPS_ID]
+    gamelump_offset = bsp.header.lump_headers[GAMELUMPS_ID].offset
+    gamelump_ver, gamelump_data = astuple(gamelump_t)
+    
+    new_gamelump_offset = calc_new_offset(bsp, GAMELUMPS_ID)
+    
+    with io.BytesIO(gamelump_data) as handle_in:
+        with io.BytesIO() as handle_out:
+            reader = Reader(handle_in)
+            writer = Writer(handle_out)
+            GameLumpConverter(gamelump_offset, new_gamelump_offset, reader, writer).convert()
+            
+            gamelump_out = handle_out.getvalue()
+    
+    bsp.set_lump(GAMELUMPS_ID, Lump(gamelump_ver, gamelump_out), LumpHeader(new_gamelump_offset, len(gamelump_out), gamelump_ver, 0))
     
     with open(fname[:-4] + "_d.bsp", "wb") as handle:
         writer = Writer(handle)
