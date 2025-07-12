@@ -17,5 +17,9 @@ class Reader:
         raw_data = self.read_bytes(4)
         return struct.unpack("<i", raw_data)[0]
     
+    def read_ushort(self) -> int:
+        raw_data = self.read_bytes(2)
+        return struct.unpack("<H", raw_data)[0]
+    
     def skip_bytes(self, amount : int):
         self.handle.seek(amount, os.SEEK_CUR)
