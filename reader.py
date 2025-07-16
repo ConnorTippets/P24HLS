@@ -27,7 +27,7 @@ class Reader:
         return self._interpret_as(2, "<B")
     
     def read_float(self) -> float:
-        return self._interpret_as(2, "<f")
+        return self._interpret_as(4, "<f")
     
     def read_vector(self) -> tuple[float, float, float]:
         x = self.read_float()
