@@ -1,5 +1,8 @@
 from dataclasses import dataclass
+import io
 
+from constants import STATICPROPSGAMELUMP_ID
+from prpsgamelump import StaticPropsGameLumpConverter
 from reader import Reader
 from writer import Writer
 
@@ -17,6 +20,30 @@ class GameLump:
 
 @dataclass
 class GameLumps:
+    def find_from_id(self, id : bytes) -> GameLump:
+        for i, header in enumerate(self.gamelump_headers):
+            if header.id == id:
+                return self.gamelumps[i]
+        
+        raise Exception(f"unable to find gamelump with id {repr(id)}")
+    
+    def find_header_from_id(self, id : bytes) -> GameLumpHeader:
+        for header in self.gamelump_headers:
+            if header.id == id:
+                return header
+        
+        raise Exception(f"unable to find gamelump with id {repr(id)}")
+    
+    def set_lump_from_id(self, id : bytes, gamelump : GameLump, gamelump_header : GameLumpHeader):
+        lump_index = 0
+        
+        for i, header in enumerate(self.gamelump_headers):
+            if header.id == id:
+                lump_index = i
+        
+        self.gamelumps[lump_index] = gamelump
+        self.gamelump_headers[lump_index] = gamelump_header
+    
     gamelumps : list[GameLump]
     gamelump_headers : list[GameLumpHeader]
 
@@ -81,10 +108,26 @@ class GameLumpWriter:
             self.writer.write_bytes(lump.data)
 
 class GameLumpConverter:
-    def __init__(self, gamelump_offset : int, new_gamelump_offset : int, reader : Reader, writer : Writer):
+    def __init__(self, gamelump_offset : int, new_gamelump_offset : int, new_prps_version : int, reader : Reader, writer : Writer):
+        self.new_prps_version = new_prps_version
         self.reader = GameLumpReader(gamelump_offset, reader)
         self.writer = GameLumpWriter(new_gamelump_offset, writer)
     
     def convert(self):
         gamelump = self.reader.read()
+        
+        staticgamelump_data = gamelump.find_from_id(STATICPROPSGAMELUMP_ID).data
+        staticgamelump_flags = gamelump.find_header_from_id(STATICPROPSGAMELUMP_ID).flags
+        staticgamelump_out = b''
+        
+        with io.BytesIO(staticgamelump_data) as handle_in:
+            with io.BytesIO() as handle_out:
+                reader = Reader(handle_in)
+                writer = Writer(handle_out)
+                StaticPropsGameLumpConverter(reader, writer, self.new_prps_version).convert()
+                
+                staticgamelump_out = handle_out.getvalue()
+        
+        gamelump.set_lump_from_id(STATICPROPSGAMELUMP_ID, GameLump(staticgamelump_out), GameLumpHeader(STATICPROPSGAMELUMP_ID, staticgamelump_flags, self.new_prps_version, 0, 0))
+        
         self.writer.write(gamelump)

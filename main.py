@@ -19,7 +19,7 @@ def main():
         reader = Reader(handle)
         bsp = BSPReader(reader).read()
     
-    print(bsp)
+    bsp.version = 20
     
     gamelump_t = bsp.lumps[GAMELUMPS_ID]
     gamelump_offset = bsp.header.lump_headers[GAMELUMPS_ID].offset
@@ -31,7 +31,7 @@ def main():
         with io.BytesIO() as handle_out:
             reader = Reader(handle_in)
             writer = Writer(handle_out)
-            GameLumpConverter(gamelump_offset, new_gamelump_offset, reader, writer).convert()
+            GameLumpConverter(gamelump_offset, new_gamelump_offset, 5, reader, writer).convert()
             
             gamelump_out = handle_out.getvalue()
     
