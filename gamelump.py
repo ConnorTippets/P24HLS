@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, astuple
 import io
 
 from constants import STATICPROPSGAMELUMP_ID
@@ -117,14 +117,14 @@ class GameLumpConverter:
         gamelump = self.reader.read()
         
         staticgamelump_data = gamelump.find_from_id(STATICPROPSGAMELUMP_ID).data
-        staticgamelump_flags = gamelump.find_header_from_id(STATICPROPSGAMELUMP_ID).flags
+        _, staticgamelump_flags, staticgamelump_version, _, _ = astuple(gamelump.find_header_from_id(STATICPROPSGAMELUMP_ID))
         staticgamelump_out = b''
         
         with io.BytesIO(staticgamelump_data) as handle_in:
             with io.BytesIO() as handle_out:
                 reader = Reader(handle_in)
                 writer = Writer(handle_out)
-                StaticPropsGameLumpConverter(reader, writer, self.new_prps_version).convert()
+                StaticPropsGameLumpConverter(reader, writer, staticgamelump_version, self.new_prps_version).convert()
                 
                 staticgamelump_out = handle_out.getvalue()
         
