@@ -30,7 +30,7 @@ class Reader:
         return self._interpret_as(2, "<H")
     
     def read_uchar(self) -> int:
-        return self._interpret_as(2, "<B")
+        return self._interpret_as(1, "<B")
     
     def read_float(self) -> float:
         return self._interpret_as(4, "<f")
