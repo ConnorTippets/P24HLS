@@ -17,8 +17,14 @@ class Reader:
     def read_bytes(self, amount : int) -> bytes:
         return self.handle.read(amount)
     
+    def read_bool(self) -> int:
+        return self._interpret_as(1, "<?")
+    
     def read_int(self) -> int:
         return self._interpret_as(4, "<i")
+    
+    def read_uint(self) -> int:
+        return self._interpret_as(4, "<I")
     
     def read_ushort(self) -> int:
         return self._interpret_as(2, "<H")
@@ -37,6 +43,13 @@ class Reader:
     
     def read_qangle(self) -> tuple[float, float, float]:
         return self.read_vector()
+
+    def read_color32(self) -> tuple[float, float, float, float]:
+        r = self.read_float()
+        g = self.read_float()
+        b = self.read_float()
+        a = self.read_float()
+        return r, g, b, a
     
     def skip_bytes(self, amount : int):
         self.handle.seek(amount, os.SEEK_CUR)
