@@ -2,7 +2,7 @@ import sys, io
 from dataclasses import astuple
 
 from constants import GAMELUMPS_ID
-from bsp import calc_new_offset, BSP, Lump, LumpHeader, BSPReader, BSPWriter
+from bsp import BSP, Lump, LumpHeader, BSPReader, BSPWriter
 from gamelump import GameLumpConverter
 from reader import Reader
 from writer import Writer
@@ -25,7 +25,7 @@ def main():
     gamelump_offset = bsp.header.lump_headers[GAMELUMPS_ID].offset
     gamelump_ver, gamelump_data = astuple(gamelump_t)
     
-    new_gamelump_offset = calc_new_offset(bsp, GAMELUMPS_ID)
+    new_gamelump_offset = bsp.calc_new_offset(GAMELUMPS_ID)
     
     with io.BytesIO(gamelump_data) as handle_in:
         with io.BytesIO() as handle_out:

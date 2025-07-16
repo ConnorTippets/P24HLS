@@ -24,6 +24,19 @@ class Lump:
 
 @dataclass
 class BSP:
+    def calc_new_offset(self, id : int):
+        if len(self.lumps[id].data) == 0:
+            return 0
+        
+        offset = 1036
+        for i in range(id):
+            offset += len(self.lumps[i].data)
+
+            if offset % 4:
+                offset += (4 - offset % 4)
+        
+        return offset
+    
     def set_lump(self, id : int, lump : Lump, header : LumpHeader):
         self.lumps[id] = lump
         self.header.lump_headers[id] = header
@@ -35,19 +48,6 @@ class BSP:
     header: BSPHeader
     lumps: list[Lump]
     map_revision: int
-
-def calc_new_offset(bsp : BSP, id : int):
-    if len(bsp.lumps[id].data) == 0:
-        return 0
-    
-    offset = 1036
-    for i in range(id):
-        offset += len(bsp.lumps[i].data)
-
-        if offset % 4:
-            offset += (4 - offset % 4)
-    
-    return offset
 
 class BSPReader:
     def __init__(self, reader : Reader):
