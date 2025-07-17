@@ -1,10 +1,10 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 import typing
 
 from reader import Reader
 from writer import Writer
 
-@dataclass
+@dataclass()
 class staticProp:
     origin : tuple[float, float, float]
     angles : tuple[float, float, float]
@@ -40,6 +40,15 @@ class staticProp:
     flags_ex : int
     
     uniform_scale : float
+    
+    def __init__(self, **kwargs):
+        names = set([f.name for f in fields(self)])
+        for k, v in kwargs.items():
+            if k in names:
+                setattr(self, k, v)
+    
+    def __repr__(self):
+        return object.__repr__(self)
 
 @dataclass
 class SPRP:
