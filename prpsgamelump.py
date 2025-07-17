@@ -4,10 +4,42 @@ import typing
 from reader import Reader
 from writer import Writer
 
+@dataclass
 class staticProp:
-    def __init__(self, **kwargs : dict):
-        for k, v in kwargs.items():
-            setattr(self, k, v)
+    origin : tuple[float, float, float]
+    angles : tuple[float, float, float]
+    
+    prop_type : int
+    first_leaf : int
+    leaf_count : int
+    solid : int
+    
+    flags : int
+    skin : int
+    fade_min_dist : float
+    fade_max_dist : float
+    lighting_origin : tuple[float, float, float]
+    
+    forced_fade_scale : float
+    
+    min_dx_level : int
+    max_dx_level : int
+    
+    lightmap_res_x : int
+    lightmap_res_y : int
+    
+    min_cpu_level : int
+    max_cpu_level : int
+    min_gpu_level : int
+    max_gpu_level : int
+    
+    diffuse_modulation : tuple[int, int, int, int]
+    
+    disable_x360 : bool
+    
+    flags_ex : int
+    
+    uniform_scale : float
 
 @dataclass
 class SPRP:
