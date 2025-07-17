@@ -45,10 +45,12 @@ class Reader:
         return self.read_vector()
 
     def read_color32(self) -> tuple[float, float, float, float]:
-        r = self.read_float()
-        g = self.read_float()
-        b = self.read_float()
-        a = self.read_float()
+        rgba = self.read_int()
+        
+        r = rgba >> 24 & 0xFF
+        g = rgba >> 16 & 0xFF
+        b = rgba >> 8  & 0xFF
+        a = rgba       & 0xFF
         return r, g, b, a
     
     def skip_bytes(self, amount : int):

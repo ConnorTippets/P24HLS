@@ -82,7 +82,7 @@ class StaticPropsGameLumpReader:
                 output['min_gpu_level'] = self.reader.read_uchar()
                 output['max_gpu_level'] = self.reader.read_uchar()
             
-            if self.version >= 7:
+            if self.version >= 7 and self.version != 7.1:
                 output['diffuse_modulation'] = self.reader.read_color32()
 
             if self.version in (9, 10):
