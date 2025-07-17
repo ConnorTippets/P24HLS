@@ -44,7 +44,7 @@ class Reader:
     def read_qangle(self) -> tuple[float, float, float]:
         return self.read_vector()
 
-    def read_color32(self) -> tuple[float, float, float, float]:
+    def read_color32(self) -> tuple[int, int, int, int]:
         rgba = self.read_int()
         
         r = rgba >> 24 & 0xFF
