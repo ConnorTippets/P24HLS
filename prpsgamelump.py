@@ -128,6 +128,7 @@ class StaticPropsGameLumpReader:
 
             if self.version in (9, 10):
                 output['disable_x360'] = self.reader.read_bool()
+                self.reader.skip_bytes(3)
             
             if self.version >= 10:
                 output['flags_ex'] = self.reader.read_uint()
@@ -148,10 +149,77 @@ class StaticPropsGameLumpReader:
 
 class StaticPropsGameLumpWriter:
     def __init__(self, version : int, writer : Writer):
-        ...
+        self.version = version
+        self.writer = writer
+    
+    def write_dict_entries(self, dict_entries : list[str]):
+        self.writer.write_int(len(dict_entries))
+        
+        for entry in dict_entries:
+            self.writer.write_bytes(bytes(entry, 'utf-8'))
+            self.writer.skip_bytes(128 - len(entry))
+    
+    def write_leaf_entries(self, leaf_entries : list[int]):
+        self.writer.write_int(len(leaf_entries))
+        
+        for entry in leaf_entries:
+            self.writer.write_ushort(entry)
+    
+    def write_static_props(self, static_props : list[staticProp]):
+        self.writer.write_int(len(static_props))
+        
+        for static_prop in static_props:
+            self.writer.write_vector(static_prop.origin)
+            self.writer.write_qangle(static_prop.angles)
+            
+            self.writer.write_ushort(static_prop.prop_type)
+            self.writer.write_ushort(static_prop.first_leaf)
+            self.writer.write_ushort(static_prop.leaf_count)
+            self.writer.write_uchar(static_prop.solid)
+            
+            if not self.version == 7.1:
+                self.writer.write_uchar(static_prop.flags)
+            
+            self.writer.write_int(static_prop.skin)
+            self.writer.write_float(static_prop.fade_min_dist)
+            self.writer.write_float(static_prop.fade_max_dist)
+            self.writer.write_vector(static_prop.lighting_origin)
+            
+            if self.version >= 5:
+                self.writer.write_float(static_prop.forced_fade_scale)
+            
+            if self.version in (6, 7, 7.1):
+                self.writer.write_ushort(static_prop.min_dx_level)
+                self.writer.write_ushort(static_prop.max_dx_level)
+            
+            if self.version == 7.1:
+                self.writer.write_uint(static_prop.flags)
+                self.writer.write_ushort(static_prop.lightmap_res_x)
+                self.writer.write_ushort(static_prop.lightmap_res_y)
+            
+            if self.version >= 8 and self.version != 7.1:
+                self.writer.write_uchar(static_prop.min_cpu_level)
+                self.writer.write_uchar(static_prop.max_cpu_level)
+                self.writer.write_uchar(static_prop.min_gpu_level)
+                self.writer.write_uchar(static_prop.max_gpu_level)
+            
+            if self.version >= 7:
+                self.writer.write_color32(static_prop.diffuse_modulation)
+            
+            if self.version in (9, 10):
+                self.writer.write_bool(static_prop.disable_x360)
+                self.writer.skip_bytes(3)
+            
+            if self.version >= 10:
+                self.writer.write_uint(static_prop.flags_ex)
+            
+            if self.version >= 11:
+                self.writer.write_float(static_prop.uniform_scale)
     
     def write(self, sprp : SPRP):
-        ...
+        self.write_dict_entries(sprp.dict_entries)
+        self.write_leaf_entries(sprp.leaf_entries)
+        self.write_static_props(sprp.static_props)
 
 class StaticPropsGameLumpConverter:
     def __init__(self, reader : Reader, writer : Writer, current_version : int, new_version : int):
@@ -162,6 +230,4 @@ class StaticPropsGameLumpConverter:
     
     def convert(self):
         sprp = self.reader.read()
-        print(sprp)
-        
         self.writer.write(sprp)
