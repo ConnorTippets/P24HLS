@@ -4,6 +4,7 @@ from dataclasses import astuple
 from constants import GAMELUMPS_ID
 from bsp import BSP, Lump, LumpHeader, BSPReader, BSPWriter
 from gamelump import GameLumpConverter
+from brushside import BrushSideConverter
 from reader import Reader
 from writer import Writer
 
@@ -21,6 +22,21 @@ def main():
         bsp = BSPReader(reader).read()
 
     bsp.version = 20
+
+    brushside = bsp.lumps[19]
+    brushside_header = bsp.header.lump_headers[19]
+    brushside_ver, brushside_data = astuple(brushside)
+    brushside_out = b""
+
+    with io.BytesIO(brushside_data) as handle_in:
+        with io.BytesIO() as handle_out:
+            reader = Reader(handle_in)
+            writer = Writer(handle_out)
+            BrushSideConverter(reader, writer).convert()
+
+            brushside_out = handle_out.getvalue()
+
+    bsp.set_lump(19, Lump(brushside_ver, brushside_out), brushside_header)
 
     if not bsp.header.lump_headers[8].length:
         new_header = bsp.header.lump_headers[53]
