@@ -14,13 +14,13 @@ class WorldLightConverter:
                 break
             self.writer.write_bytes(skip)
 
-            type = self.reader.read_int()
+            type = self.reader.read_uint()
             style = self.reader.read_int()
 
             print(f"Type: {type}\nStyle: {style}")
 
-            self.writer.write_int(type)
-            self.writer.write_int(style)
+            self.writer.write_uint(3)
+            self.writer.write_bytes(b"\x00\xff\xff\xff")
 
             skip = self.reader.read_bytes(40)
             if len(skip) < 40:
