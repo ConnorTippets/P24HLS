@@ -76,6 +76,7 @@ def main():
             writer = Writer(handle_out)
             WorldLightConverter(reader, writer).convert()
             worldlight_out = handle_out.getvalue()
+
     bsp.set_lump(54, Lump(worldlight_ver, worldlight_out), worldlight_header)
 
     with open(fname[:-4] + "_d.bsp", "wb") as handle:
