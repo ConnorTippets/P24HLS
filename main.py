@@ -1,4 +1,4 @@
-import sys, io
+import sys, io, argparse
 from dataclasses import astuple
 
 from constants import GAMELUMPS_ID
@@ -10,14 +10,7 @@ from reader import Reader
 from writer import Writer
 
 
-def main():
-    if len(sys.argv) < 2:
-        print("expected usage of tool:")
-        print("main [fname].bsp")
-
-        exit(1)
-
-    fname = sys.argv[1]
+def main(fname, should_extract_pakfile=False, new_pakfile=None):
     with open(fname, "rb") as handle:
         reader = Reader(handle)
         bsp = BSPReader(reader).read()
@@ -89,4 +82,28 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(
+        prog="P24HLS",
+        description="Downport Portal 2 maps to Half-Life Source (ver.20 VBSP)",
+        epilog="Only the first step in downporting maps. Downporting textures and models are separate.",
+    )
+
+    parser.add_argument("filename")
+    parser.add_argument(
+        "-e",
+        "--extract_pakfile",
+        help="Only extract the pakfile from the BSP. Useful for downporting textures, as cubemaps are stored in the BSP.",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-p",
+        "--new_pakfile",
+        help="Pakfile to be injected into BSP. Can be any zip file.",
+    )
+
+    args = parser.parse_args()
+    fname: str = args.filename
+    extract_pakfile: bool = args.extract_pakfile
+    pakfile: str = args.new_pakfile
+
+    main(fname, extract_pakfile, pakfile)
