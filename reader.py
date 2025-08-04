@@ -15,11 +15,11 @@ class Reader:
     def go_to(self, offset: int):
         self.handle.seek(offset)
 
-    def read_bytes(self, amount: int = 0) -> bytes:
-        if amount > 0:
-            return self.handle.read(amount)
-        else:
+    def read_bytes(self, amount: typing.Union[int, None] = None) -> bytes:
+        if amount == None:
             return self.handle.read()
+        else:
+            return self.handle.read(amount)
 
     def read_bool(self) -> int:
         return self._interpret_as(1, "<?")
