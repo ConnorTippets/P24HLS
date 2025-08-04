@@ -11,7 +11,6 @@ def convert_all_in_path(dir: str):
     for vtf_path in all_vtfs:
         vtf_out = b""
 
-        size = path.getsize(vtf_path)
         with open(vtf_path, "rb") as handle_in:
             with io.BytesIO() as handle_out:
                 reader = Reader(handle_in)
