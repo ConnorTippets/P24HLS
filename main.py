@@ -44,6 +44,10 @@ def main():
 
         bsp.set_lump(8, bsp.lumps[53], new_header)
 
+    if new_pakfile:
+        with open(new_pakfile, "rb") as handle:
+            pakfile_contents = handle.read()
+
     gamelump_t = bsp.lumps[GAMELUMPS_ID]
     gamelump_offset = bsp.header.lump_headers[GAMELUMPS_ID].offset
     gamelump_ver, gamelump_data = astuple(gamelump_t)
