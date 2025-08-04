@@ -87,7 +87,6 @@ class StaticPropsGameLumpReader:
 
     def read_static_props(self) -> list[staticProp]:
         count = self.reader.read_int()
-        print(count)
 
         static_props = []
         for _ in range(count):
