@@ -66,20 +66,17 @@ def main():
         LumpHeader(new_gamelump_offset, len(gamelump_out), gamelump_ver, 0),
     )
 
-    #     worldlight = bsp.lumps[54]
-    #     worldlight_header = bsp.header.lump_headers[54]
-    #     worldlight_ver, worldlight_data = astuple(worldlight)
-    #     worldlight_out = b""
-
-    #     with io.BytesIO(worldlight_data) as handle_in:
-    #         with io.BytesIO() as handle_out:
-    #             reader = Reader(handle_in)
-    #             writer = Writer(handle_out)
-    #             WorldLightConverter(reader, writer).convert()
-
-    #             worldlight_out = handle_out.getvalue()
-
-    #     bsp.set_lump(54, Lump(worldlight_ver, worldlight_out), worldlight_header)
+    worldlight = bsp.lumps[54]
+    worldlight_header = bsp.header.lump_headers[54]
+    worldlight_ver, worldlight_data = astuple(worldlight)
+    worldlight_out = b""
+    with io.BytesIO(worldlight_data) as handle_in:
+        with io.BytesIO() as handle_out:
+            reader = Reader(handle_in)
+            writer = Writer(handle_out)
+            WorldLightConverter(reader, writer).convert()
+            worldlight_out = handle_out.getvalue()
+    bsp.set_lump(54, Lump(worldlight_ver, worldlight_out), worldlight_header)
 
     with open(fname[:-4] + "_d.bsp", "wb") as handle:
         writer = Writer(handle)
