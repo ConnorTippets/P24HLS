@@ -20,7 +20,7 @@ def convert_all_in_path(dir: str):
                 writer.write_bytes(skip)
 
                 ver = reader.read_bytes(1)
-                if ver == b"\x00":
+                if ver == b"\x30":
                     continue
 
                 print(mdl_path)
