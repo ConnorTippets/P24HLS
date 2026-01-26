@@ -1,7 +1,7 @@
 import sys
 from io import BytesIO
 
-from models import BSP
+from models import BSP, GameLumpHeader
 
 
 def main(bsp_content: bytes):

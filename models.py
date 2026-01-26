@@ -4,6 +4,45 @@ import struct
 
 
 @dataclass
+class GameLump:
+    id: bytes
+    offset: int
+    version: int
+    flags: int
+    data: bytes
+
+    @classmethod
+    def from_bytes(cls, reader: BytesIO) -> "GameLump":
+        id: bytes = reader.read(4)
+        flags: int = struct.unpack("<H", reader.read(2))[0]
+        ver: int = struct.unpack("<H", reader.read(2))[0]
+        offset: int = struct.unpack("<i", reader.read(4))[0]
+        length: int = struct.unpack("<i", reader.read(4))[0]
+
+        cur_pos = reader.tell()
+        reader.seek(offset)
+        data = reader.read(length)
+        reader.seek(cur_pos)
+
+        return cls(id, offset, ver, flags, data)
+
+
+@dataclass
+class GameLumpHeader:
+    lumps: list[GameLump]
+
+    @classmethod
+    def from_bytes(cls, reader: BytesIO) -> "GameLumpHeader":
+        lump_count: int = struct.unpack("<i", reader.read(4))[0]
+
+        lumps: list[GameLump] = []
+        for i in range(lump_count):
+            lumps.append(GameLump.from_bytes(reader))
+
+        return cls(lumps)
+
+
+@dataclass
 class BSPLump:
     id: int
     offset: int
@@ -51,20 +90,34 @@ class BSP:
         header = b"VBSP" + struct.pack("<i", self.version)
         lumps_out = bytes()
 
-        lumps = sorted(self.lumps, key=lambda x: x.id)
+        header_lumps = sorted(self.lumps, key=lambda x: x.id)
 
-        offset = 1036  # end of header
-        for lump in lumps:
+        in_lumps = sorted(self.lumps, key=lambda x: x.offset)
+
+        offset_offset = 0
+        for lump in header_lumps:
+            offset = lump.offset + offset_offset
+
+            if offset % 4:  # falls outside a 4 byte boundary
+                offset_offset += 4 - (
+                    offset_offset % 4
+                )  # bring it to the next 4 byte boundary
+
+            offset = lump.offset + offset_offset
+
             header += struct.pack(
                 "<iiiBBBB", offset, len(lump.data), lump.version, *lump.fourcc
             )
 
-            offset += len(lump.data)
+        offset = 1036
+        for lump in in_lumps:
             lumps_out += lump.data
 
+            offset += len(lump.data)
+
             if offset % 4:  # falls outside a 4 byte boundary
-                offset += 4 - (offset % 4)  # bring it to the next 4 byte boundary
                 lumps_out += b"\x00" * (4 - (offset % 4))
+                offset += 4 - (offset % 4)  # bring it to the next 4 byte boundary
 
         header += struct.pack("<i", self.map_revision)
 
