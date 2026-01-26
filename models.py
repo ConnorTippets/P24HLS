@@ -49,19 +49,24 @@ class BSP:
 
     def to_bytes(self) -> bytes:
         header = b"VBSP" + struct.pack("<i", self.version)
-        lumps = bytes()
+        lumps_out = bytes()
+
+        lumps = sorted(self.lumps, key=lambda x: x.id)
 
         offset = 1036  # end of header
-        for lump in self.lumps:
+        for lump in lumps:
+            print(offset)
             header += struct.pack(
                 "<iiiBBBB", offset, len(lump.data), lump.version, *lump.fourcc
             )
 
-            lumps += lump.data
-
             offset += len(lump.data)
+            lumps_out += lump.data
+
             if offset % 4:  # falls outside a 4 byte boundary
                 offset += 4 - (offset % 4)  # bring it to the next 4 byte boundary
-                lumps += b"\x00" * (4 - (offset & 4))
+                lumps_out += b"\x00" * (4 - (offset % 4))
 
-        return header + lumps
+        header += struct.pack("<i", self.map_revision)
+
+        return header + lumps_out
