@@ -55,7 +55,6 @@ class BSP:
 
         offset = 1036  # end of header
         for lump in lumps:
-            print(offset)
             header += struct.pack(
                 "<iiiBBBB", offset, len(lump.data), lump.version, *lump.fourcc
             )
