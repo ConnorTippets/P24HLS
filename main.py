@@ -7,7 +7,15 @@ from models import BSP
 def main(bsp_content: bytes):
     bsp_reader = BytesIO(bsp_content)
 
-    print(BSP.from_bytes(bsp_reader))
+    bsp = BSP.from_bytes(bsp_reader)
+
+    if not bsp:
+        exit()
+
+    bsp_output = bsp.to_bytes()
+
+    with open("output.bsp", "wb") as f:
+        f.write(bsp_output)
 
 
 if __name__ == "__main__":

@@ -46,3 +46,22 @@ class BSP:
         map_revision: int = struct.unpack("<i", reader.read(4))[0]
 
         return cls(version, map_revision, lumps)
+
+    def to_bytes(self) -> bytes:
+        header = b"VBSP" + struct.pack("<i", self.version)
+        lumps = bytes()
+
+        offset = 1036  # end of header
+        for lump in self.lumps:
+            header += struct.pack(
+                "<iiiBBBB", offset, len(lump.data), lump.version, *lump.fourcc
+            )
+
+            lumps += lump.data
+
+            offset += len(lump.data)
+            if offset % 4:  # falls outside a 4 byte boundary
+                offset += 4 - (offset % 4)  # bring it to the next 4 byte boundary
+                lumps += b"\x00" * (4 - (offset & 4))
+
+        return header + lumps
