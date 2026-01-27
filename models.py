@@ -41,6 +41,29 @@ class GameLumpHeader:
 
         return cls(lumps)
 
+    def to_bytes(self, offset: int) -> bytes:
+        packet = struct.pack("<i", len(self.lumps))
+
+        lumps_offset = offset + 4 + 16 * len(self.lumps)
+        for lump in self.lumps:
+            lump.offset = lumps_offset
+
+            lumps_offset += len(lump.data)
+
+            packet += struct.pack(
+                "<bbbbHHii",
+                *list(lump.id),
+                lump.flags,
+                lump.version,
+                lump.offset,
+                len(lump.data)
+            )
+
+        for lump in sorted(self.lumps, key=lambda x: x.offset):
+            packet += lump.data
+
+        return packet
+
 
 @dataclass
 class BSPLump:
@@ -70,6 +93,7 @@ class BSP:
     version: int
     map_revision: int
     lumps: list[BSPLump]
+    gamelump: GameLumpHeader
 
     @classmethod
     def from_bytes(cls, reader: BytesIO) -> "BSP | None":
@@ -84,11 +108,13 @@ class BSP:
 
         map_revision: int = struct.unpack("<i", reader.read(4))[0]
 
-        return cls(version, map_revision, lumps)
+        reader.seek(lumps[35].offset)
+        gamelumpheader = GameLumpHeader.from_bytes(reader)
+
+        return cls(version, map_revision, lumps, gamelumpheader)
 
     def to_bytes(self) -> bytes:
-        header = b"VBSP" + struct.pack("<i", self.version)
-        lumps_out = bytes()
+        packet = b"VBSP" + struct.pack("<i", self.version)
 
         header_lumps = sorted(self.lumps, key=lambda x: x.id)
 
@@ -105,20 +131,23 @@ class BSP:
 
             offset = lump.offset + offset_offset
 
-            header += struct.pack(
+            packet += struct.pack(
                 "<iiiBBBB", offset, len(lump.data), lump.version, *lump.fourcc
             )
 
+        packet += struct.pack("<i", self.map_revision)
+
         offset = 1036
         for lump in in_lumps:
-            lumps_out += lump.data
+            if lump.id == 35:
+                lump.data = self.gamelump.to_bytes(offset)
+
+            packet += lump.data
 
             offset += len(lump.data)
 
             if offset % 4:  # falls outside a 4 byte boundary
-                lumps_out += b"\x00" * (4 - (offset % 4))
+                packet += b"\x00" * (4 - (offset % 4))
                 offset += 4 - (offset % 4)  # bring it to the next 4 byte boundary
 
-        header += struct.pack("<i", self.map_revision)
-
-        return header + lumps_out
+        return packet
