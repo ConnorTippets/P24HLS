@@ -116,29 +116,23 @@ class BSP:
     def to_bytes(self) -> bytes:
         packet = b"VBSP" + struct.pack("<i", self.version)
 
-        header_lumps = sorted(self.lumps, key=lambda x: x.id)
+        lumps = sorted(self.lumps, key=lambda x: x.id)
 
-        in_lumps = sorted(self.lumps, key=lambda x: x.offset)
-
-        offset_offset = 0
-        for lump in header_lumps:
-            offset = lump.offset + offset_offset
-
+        offset = 1036
+        for lump in lumps:
             if offset % 4:  # falls outside a 4 byte boundary
-                offset_offset += 4 - (
-                    offset_offset % 4
-                )  # bring it to the next 4 byte boundary
-
-            offset = lump.offset + offset_offset
+                offset += 4 - (offset % 4)  # bring it to the next 4 byte boundary
 
             packet += struct.pack(
                 "<iiiBBBB", offset, len(lump.data), lump.version, *lump.fourcc
             )
 
+            offset += len(lump.data)
+
         packet += struct.pack("<i", self.map_revision)
 
         offset = 1036
-        for lump in in_lumps:
+        for lump in lumps:
             if lump.id == 35:
                 lump.data = self.gamelump.to_bytes(offset)
 
