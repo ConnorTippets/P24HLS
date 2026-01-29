@@ -38,6 +38,39 @@ class VertexLump:
 
 
 @dataclass
+class Edge:
+    a: int
+    b: int
+
+    @classmethod
+    def from_bytes(cls, reader: BytesIO) -> "Edge | None":
+        data = reader.read(4)
+        if not data:
+            return
+
+        a, b = struct.unpack("<HH", data)
+        return cls(a, b)
+
+
+@dataclass
+class EdgesLump:
+    edges: list[Edge]
+
+    @classmethod
+    def from_bytes(cls, reader: BytesIO) -> "EdgesLump":
+        edges: list[Edge] = []
+
+        while True:
+            edge = Edge.from_bytes(reader)
+            if not edge:
+                break
+
+            edges.append(edge)
+
+        return cls(edges)
+
+
+@dataclass
 class GameLump:
     id: bytes
     offset: int
