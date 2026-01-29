@@ -1,7 +1,8 @@
 import sys
+import json
 from io import BytesIO
 
-from models import BSP, GameLumpHeader
+from models import BSP, VertexLump
 
 
 def main(bsp_content: bytes):
@@ -11,6 +12,17 @@ def main(bsp_content: bytes):
 
     if not bsp:
         exit()
+
+    vertexlump = VertexLump.from_bytes(BytesIO(bsp.lumps[3].data))
+
+    flat_vertex: list[float] = []
+    for v in vertexlump.vertices:
+        flat_vertex.append(v.x)
+        flat_vertex.append(v.y)
+        flat_vertex.append(v.z)
+
+    with open("out.txt", "w") as f:
+        f.write(r"\left[" + repr(flat_vertex).replace(" ", "")[1:-1] + r"\right]")
 
     bsp_output = bsp.to_bytes()
 

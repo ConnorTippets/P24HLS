@@ -4,6 +4,40 @@ import struct
 
 
 @dataclass
+class Vector:
+    x: float
+    y: float
+    z: float
+
+    @classmethod
+    def from_bytes(cls, reader: BytesIO) -> "Vector | None":
+        data = reader.read(12)
+        if not data:
+            return
+
+        x, y, z = struct.unpack("<fff", data)
+        return cls(x, y, z)
+
+
+@dataclass
+class VertexLump:
+    vertices: list[Vector]
+
+    @classmethod
+    def from_bytes(cls, reader: BytesIO) -> "VertexLump":
+        vertices: list[Vector] = []
+
+        while True:
+            vector = Vector.from_bytes(reader)
+            if not vector:
+                break
+
+            vertices.append(vector)
+
+        return cls(vertices)
+
+
+@dataclass
 class GameLump:
     id: bytes
     offset: int
