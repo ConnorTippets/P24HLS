@@ -2,7 +2,7 @@ import sys
 import json
 from io import BytesIO
 
-from models import BSP, VertexLump, EdgesLump, SurfedgesLump
+from models import BSP, VertexLump, EdgesLump, SurfedgesLump, FacesLump
 
 
 def main(bsp_content: bytes):
@@ -16,6 +16,7 @@ def main(bsp_content: bytes):
     vertexlump = VertexLump.from_bytes(BytesIO(bsp.lumps[3].data))
     edgeslump = EdgesLump.from_bytes(BytesIO(bsp.lumps[12].data))
     surfedgeslump = SurfedgesLump.from_bytes(BytesIO(bsp.lumps[13].data))
+    faceslump = FacesLump.from_bytes(BytesIO(bsp.lumps[7].data))
 
     for v in vertexlump.vertices:
         print(f"v {v.x} {v.y} {v.z}")

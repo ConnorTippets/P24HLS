@@ -89,6 +89,89 @@ class SurfedgesLump:
 
 
 @dataclass
+class Face:
+    planenum: int
+    side: int
+    onNode: int
+    firstedge: int
+    numedges: int
+    texinfo: int
+    dispinfo: int
+    surfaceFogVolumeID: int
+    styles: tuple[int]
+    lightofs: int
+    area: float
+    LightmapTextureMinsInLuxels: tuple[int]
+    LightmapTextureSizeInLuxels: tuple[int]
+    origFace: int
+    numPrims: int
+    firstPrimID: int
+    smoothingGroups: int
+
+    @classmethod
+    def from_bytes(cls, reader: BytesIO) -> "Face | None":
+        data = reader.read(16)
+        if not data:
+            return
+
+        (
+            planenum,
+            side,
+            onNode,
+            firstedge,
+            numedges,
+            texinfo,
+            dispinfo,
+            surfaceFogVolumeID,
+        ) = struct.unpack("<HCCiBBBB", data)
+        styles = struct.unpack("<BBBB", reader.read(4))
+        lightofs, area = struct.unpack("<if", reader.read(8))
+        LightmapTextureMinsInLuxels = struct.unpack("<ii", reader.read(8))
+        LightmapTextureSizeInLuxels = struct.unpack("<ii", reader.read(8))
+        origFace, numPrims, firstPrimID, smoothingGroups = struct.unpack(
+            "<iHHI", reader.read(12)
+        )
+
+        return cls(
+            planenum,
+            side,
+            onNode,
+            firstedge,
+            numedges,
+            texinfo,
+            dispinfo,
+            surfaceFogVolumeID,
+            styles,
+            lightofs,
+            area,
+            LightmapTextureMinsInLuxels,
+            LightmapTextureSizeInLuxels,
+            origFace,
+            numPrims,
+            firstPrimID,
+            smoothingGroups,
+        )
+
+
+@dataclass
+class FacesLump:
+    faces: list[Face]
+
+    @classmethod
+    def from_bytes(cls, reader: BytesIO) -> "FacesLump":
+        faces: list[Face] = []
+
+        while True:
+            face = Face.from_bytes(reader)
+            if not face:
+                break
+
+            faces.append(face)
+
+        return cls(faces)
+
+
+@dataclass
 class GameLump:
     id: bytes
     offset: int
