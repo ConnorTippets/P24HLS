@@ -71,6 +71,24 @@ class EdgesLump:
 
 
 @dataclass
+class SurfedgesLump:
+    surfedges: list[int]
+
+    @classmethod
+    def from_bytes(cls, reader: BytesIO) -> "SurfedgesLump":
+        surfedges: list[int] = []
+
+        while True:
+            data = reader.read(4)
+            if not data:
+                break
+
+            surfedges.append(struct.unpack("<i", data)[0])
+
+        return cls(surfedges)
+
+
+@dataclass
 class GameLump:
     id: bytes
     offset: int
