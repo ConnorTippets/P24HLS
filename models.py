@@ -123,7 +123,7 @@ class Face:
             texinfo,
             dispinfo,
             surfaceFogVolumeID,
-        ) = struct.unpack("<HCCiBBBB", data)
+        ) = struct.unpack("<HBBihhhh", data)
         styles = struct.unpack("<BBBB", reader.read(4))
         lightofs, area = struct.unpack("<if", reader.read(8))
         LightmapTextureMinsInLuxels = struct.unpack("<ii", reader.read(8))
