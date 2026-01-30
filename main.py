@@ -1,5 +1,5 @@
 import sys
-import json
+import random
 from io import BytesIO
 
 from models import BSP, VertexLump, EdgesLump, SurfedgesLump, FacesLump, Edge
@@ -18,37 +18,54 @@ def main(bsp_content: bytes):
     surfedgeslump = SurfedgesLump.from_bytes(BytesIO(bsp.lumps[13].data))
     faceslump = FacesLump.from_bytes(BytesIO(bsp.lumps[7].data))
 
-    edgesperface: list[list[list[int]]] = []
-    for face in faceslump.faces:
-        surfedges = surfedgeslump.surfedges[
-            face.firstedge : face.firstedge + face.numedges
-        ]
+    import math
 
-        edges: list[list[int]] = []
-        for surfedge in surfedges:
-            edge = edgeslump.edges[abs(surfedge)]
-            a, b = edge.a, edge.b
+    center = (7809.063477, -5773.441406)
 
-            if surfedge < 0:
-                a, b = b, a
+    for vertex in vertexlump.vertices:
+        theta = math.radians(random.randint(45, 50))
+        new_v_x = math.cos(theta) * (vertex.x - center[0]) + math.sin(theta) * (
+            vertex.y - center[1]
+        )
+        new_v_y = math.cos(theta) * (vertex.y - center[1]) - math.sin(theta) * (
+            vertex.x - center[0]
+        )
+        vertex.x = new_v_x + center[0]
+        vertex.y = new_v_y + center[1]
 
-            edges.append([a, b])
-        edgesperface.append(edges)
+    bsp.lumps[3].data = vertexlump.to_bytes()
 
-    triangles: list[list[int]] = []
-    for edges in edgesperface:
-        vertices = [edge[0] for edge in edges]
-
-        for i in range(2, len(vertices)):
-            triangles.append([vertices[0], vertices[i - 1], vertices[i]])
-
-    for v in vertexlump.vertices:
-        print(f"v {v.x} {v.z} {v.y}")
-
-    print()
-
-    for tri in triangles:
-        print(f"f {tri[0]+1} {tri[1]+1} {tri[2]+1}")
+    # edgesperface: list[list[list[int]]] = []
+    # for face in faceslump.faces:
+    #     surfedges = surfedgeslump.surfedges[
+    #         face.firstedge : face.firstedge + face.numedges
+    #     ]
+    #
+    #     edges: list[list[int]] = []
+    #     for surfedge in surfedges:
+    #         edge = edgeslump.edges[abs(surfedge)]
+    #         a, b = edge.a, edge.b
+    #
+    #         if surfedge < 0:
+    #             a, b = b, a
+    #
+    #         edges.append([a, b])
+    #     edgesperface.append(edges)
+    #
+    # triangles: list[list[int]] = []
+    # for edges in edgesperface:
+    #     vertices = [edge[0] for edge in edges]
+    #
+    #     for i in range(2, len(vertices)):
+    #         triangles.append([vertices[0], vertices[i - 1], vertices[i]])
+    #
+    # for v in vertexlump.vertices:
+    #     print(f"v {v.x} {v.z} {v.y}")
+    #
+    # print()
+    #
+    # for tri in triangles:
+    #     print(f"f {tri[0]+1} {tri[1]+1} {tri[2]+1}")
 
     bsp_output = bsp.to_bytes()
 

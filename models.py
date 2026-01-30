@@ -18,6 +18,9 @@ class Vector:
         x, y, z = struct.unpack("<fff", data)
         return cls(x, y, z)
 
+    def to_bytes(self) -> bytes:
+        return struct.pack("<fff", self.x, self.y, self.z)
+
 
 @dataclass
 class VertexLump:
@@ -35,6 +38,9 @@ class VertexLump:
             vertices.append(vector)
 
         return cls(vertices)
+
+    def to_bytes(self) -> bytes:
+        return b"".join(vec.to_bytes() for vec in self.vertices)
 
 
 @dataclass
